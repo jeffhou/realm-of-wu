@@ -20,5 +20,8 @@
   "bugs": {
     "url": "https://github.com/jeffhou/realm-of-wu/issues"
   },
-  "homepage": "https://github.com/jeffhou/realm-of-wu#readme"
+  "homepage": "https://github.com/jeffhou/realm-of-wu#readme",
+  "dependencies": {
+    "express": "^4.15.3"
+  }
 }
