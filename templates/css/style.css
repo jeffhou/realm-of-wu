@@ -1,0 +1,18 @@
+div.top-nav-section {
+  line-height: 12.5ex;
+  background-color: #aaF;
+  text-align: center;
+  width: 100%;
+}
+div.left-nav-section {
+  float: left;
+  height:calc(100% - 12.5ex);
+  background-color: #faa;
+  width: 300px;
+}
+div.right-section {
+  float: left;
+  height:calc(100% - 12.5ex);
+  width:calc(100% - 300px);
+  background-color: #afa;
+}
