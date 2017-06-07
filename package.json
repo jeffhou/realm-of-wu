@@ -1,0 +1,24 @@
+{
+  "name": "realm-of-wu",
+  "version": "0.0.0",
+  "description": "Browser-based RPG",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+ssh://git@github.com/jeffhou/realm-of-wu.git"
+  },
+  "keywords": [
+    "rpg",
+    "game",
+    "browser"
+  ],
+  "author": "jeffhou",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/jeffhou/realm-of-wu/issues"
+  },
+  "homepage": "https://github.com/jeffhou/realm-of-wu#readme"
+}
