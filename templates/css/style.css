@@ -4,7 +4,13 @@ div.top-nav-section {
   text-align: center;
   width: 100%;
 }
+div.top-nav-section a {
+  margin: 0px 3px;
+}
+
 div.left-nav-section {
+  padding-top: 50px;
+  text-align: center;
   float: left;
   height:calc(100% - 12.5ex);
   background-color: #faa;
@@ -12,7 +18,28 @@ div.left-nav-section {
 }
 div.right-section {
   float: left;
+  display: flex;
   height:calc(100% - 12.5ex);
   width:calc(100% - 300px);
   background-color: #afa;
+}
+div.right-content {
+  margin: auto;
+}
+.combat-row-5 {
+  margin: 5px auto;
+}
+.combat-row-15 {
+  margin: 15px auto;
+}
+.center {
+  text-align: center;
+}
+
+.inline {
+  display: inline;
+}
+
+img {
+  vertical-align: middle;
 }

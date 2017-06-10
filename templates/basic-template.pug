@@ -4,6 +4,17 @@ html
     title Realm of Wu
     link(rel='stylesheet', href='/css/style.css')
   body
-    div(class="top-nav-section") top nav section text
-    div(class="left-nav-section") left nav section text
-    div(class="right-section") right section text
+    div(class="top-nav-section")
+      img(src="https://s3.amazonaws.com/images.kingdomofloathing.com/otherimages/smallleftswordguy.gif")
+      a(href="/inventory") inventory
+      a(href="/town") town
+    div(class="left-nav-section")
+      img(src="https://s3.amazonaws.com/images.kingdomofloathing.com/otherimages/classav51.gif")
+      div(style="font-weight: bold") #{user.name}
+      div Level #{user.level}
+      div HP: #{user.hp_current} / #{user.hp_max}
+      div Money: #{user.money}
+    div(class="right-section")
+      div(class="right-content")
+        block content
+          div asdfasdfasdf

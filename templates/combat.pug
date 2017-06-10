@@ -1,0 +1,34 @@
+extends basic-template
+
+block content
+  div(class="center")
+    div
+      img(src=monster.image, class="inline")
+      div(class="inline")
+      | You are fighting a
+      |
+      strong #{monster.name}
+    br
+    div #{userAttackText}
+    br
+    if monsterAttackText
+      div #{monsterAttackText}
+      br
+      div
+        a(href="combat") Attack!
+      br
+      div
+        a(href="run") Run!
+    if !monsterAttackText
+      div(class="combat-row-15") You win the fight!
+      div(class="combat-row-15")
+        each item in battleConsequences['items']
+          div
+          | You acquire an item:
+          |
+          strong #{item}
+      div(class="combat-row-15") You gain #{battleConsequences['money']} Money
+      div(class="combat-row-15") You gain #{battleConsequences['exp']} experience
+      br
+      div
+        a(href="/combat") Adventure Again
