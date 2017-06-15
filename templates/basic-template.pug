@@ -7,11 +7,12 @@ html
     div(class="top-nav-section")
       img(src="https://s3.amazonaws.com/images.kingdomofloathing.com/otherimages/smallleftswordguy.gif")
       a(href="/inventory") inventory
-      a(href="/town") town
+      a(href="/combat") combat
     div(class="left-nav-section")
       img(src="https://s3.amazonaws.com/images.kingdomofloathing.com/otherimages/classav51.gif")
       div(style="font-weight: bold") #{user.name}
       div Level #{user.level}
+      div Experience #{user.experience}
       div HP: #{user.hp_current} / #{user.hp_max}
       div Money: #{user.money}
     div(class="right-section")

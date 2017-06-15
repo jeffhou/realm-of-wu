@@ -1,5 +1,5 @@
 extends basic-template
 
 block content
-  each quantity, item in user.inventory
-    li #{item} - #{quantity}
+  each itemString in itemStrings
+    li #{itemString}
