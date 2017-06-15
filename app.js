@@ -1,5 +1,4 @@
 const pug = require('pug')
-const compiledView_Main = pug.compileFile('templates/basic-template.pug');
 const compiledView_Inventory = pug.compileFile('templates/inventory.pug');
 const compiledView_Combat = pug.compileFile('templates/combat.pug');
 
@@ -72,7 +71,7 @@ var monster = null
 app.use('/css', express.static('templates/css'))
 
 app.get('/', function (request, response) {
-  response.send(compiledView_Main({user: user}))
+  response.send(compiledView_Inventory({user: user, itemStrings: compileInventoryStrings()}))
 })
 
 function compileInventoryStrings () {
@@ -85,8 +84,8 @@ function compileInventoryStrings () {
   }
   return itemStrings
 }
-app.get('/inventory', function (request, response) {
 
+app.get('/inventory', function (request, response) {
   response.send(compiledView_Inventory({user: user, itemStrings: compileInventoryStrings()}))
 })
 
