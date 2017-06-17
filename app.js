@@ -63,8 +63,8 @@ function Monster(name, inventory, hp, attack, money, exp, imageURL) {
 Monster.prototype.create = function () {
   return {"monster": this, "currentHP": this.hp}
 }
-new Monster("big creepy spider", [0, 0], 2, 1, 1, 1, "http://cdn.coldfront.net/thekolwiki/images/9/9a/Spider1.gif")
-new Monster("drunken half-orc hobo", [1], 3, 2, 2, 3, "http://cdn.coldfront.net/thekolwiki/images/d/d5/Hobo.gif")
+new Monster("big creepy spider", [{"id":0, "chance":0.25, "quantity": 2}], 2, 1, 1, 1, "http://cdn.coldfront.net/thekolwiki/images/9/9a/Spider1.gif")
+new Monster("drunken half-orc hobo", [{"id":1, "chance":0.33, "quantity": 1}], 3, 2, 2, 3, "http://cdn.coldfront.net/thekolwiki/images/d/d5/Hobo.gif")
 
 var user = new User('u9q5')
 var combatStatus = "new combat"
@@ -96,6 +96,24 @@ function generateMonsterForCombat () {
   return monster
 }
 
+// Return array of item maps (keys: id, quantity)
+function generateMonsterDrops (monster) {
+  drops = {}
+  inventory = monster.inventory
+  for (var i = 0; i < inventory.length; i++) {
+    for (var j = 0; j < inventory[i]["quantity"]; j++) {
+      if (Math.random() < inventory[i]["chance"]) {
+        if (inventory[i]["id"] in drops) {
+          drops[inventory[i]["id"]] += 1
+        } else if (!(inventory[i]["id"] in drops)) {
+          drops[inventory[i]["id"]] = 1
+        }
+      }
+    }
+  }
+  return drops
+}
+
 app.get('/combat', function (request, response) {
   console.log("user enters combat, userHP - " + user.hp_current)
   // No monster currently.
@@ -110,14 +128,17 @@ app.get('/combat', function (request, response) {
   if (monster['currentHP'] <= 0) {
     console.log("monster died")
     var itemAcquiredStrings = []
-    for (var i = 0; i < monster['monster'].inventory.length; i++) {
-      if (!(monster['monster'].inventory[i] in user.inventory)) {
-        user.inventory[monster['monster'].inventory[i]] = 1
-      } else if (monster['monster'].inventory[i] in user.inventory) {
-        user.inventory[monster['monster'].inventory[i]] += 1
+    var drops = generateMonsterDrops(monster['monster'])
+    for (var i in drops) {
+      if (!(i in user.inventory)) {
+        user.inventory[i] = drops[i]
+      } else if (i in user.inventory) {
+        user.inventory[i] += drops[i]
       }
-      itemAcquiredStrings.push(items[monster['monster'].inventory[i]].name)
-      console.log("user acquires item: " + items[monster['monster'].inventory[i]].name)
+      for (var j = 0; j < drops[i]; j++) {
+          itemAcquiredStrings.push(items[i].name)
+      }
+      console.log("user acquires item: " + items[i].name)
     }
     user.money += monster['monster'].money
     console.log("user gains " + monster['monster'].money + " gold, total - " + user.money)
