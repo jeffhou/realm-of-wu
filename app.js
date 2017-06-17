@@ -90,12 +90,18 @@ app.get('/inventory', function (request, response) {
   response.send(compiledView_Inventory({user: user, itemStrings: compileInventoryStrings()}))
 })
 
+function generateMonsterForCombat () {
+  monsterIndex = Math.floor(Math.random() * monsters.length)
+  monster = monsters[monsterIndex].create()
+  return monster
+}
+
 app.get('/combat', function (request, response) {
   console.log("user enters combat, userHP - " + user.hp_current)
   // No monster currently.
   if (monster == null) {
-    monster = monsters[0].create()
-    console.log("monster created, currentHP - " + monster['currentHP'])
+    monster = generateMonsterForCombat()
+    console.log("monster " + monster["monster"].name + " created, currentHP - " + monster['currentHP'])
   }
   monster['currentHP'] -= user.attackDamage()
   console.log("monster damaged, currentHP - " + monster['currentHP'] + " damage - " + user.attackDamage())
@@ -110,7 +116,7 @@ app.get('/combat', function (request, response) {
       } else if (monster['monster'].inventory[i] in user.inventory) {
         user.inventory[monster['monster'].inventory[i]] += 1
       }
-      itemAcquiredStrings.push("You acquire an item: " + items[monster['monster'].inventory[i]].name)
+      itemAcquiredStrings.push(items[monster['monster'].inventory[i]].name)
       console.log("user acquires item: " + items[monster['monster'].inventory[i]].name)
     }
     user.money += monster['monster'].money
