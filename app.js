@@ -9,7 +9,7 @@ function User(name) {
   this.level = 1;
   this.experience = 0;
   this.name = name;
-  this.inventory = {0: 1, 1: 2}
+  this.inventory = {}
   this.money = 0
   this.hp_current = 10
   this.hp_max = 10
@@ -42,18 +42,18 @@ function Item (name) {
   items.push(this)
   itemsDict[name] = this
 }
-new Item("Peanut Butter")
-new Item("Jelly")
+new Item("spider web")
+new Item("moxie weed")
 
 var nextMonsterID = 0
 var monsters = []
-function Monster(name, inventory, hp, attack, money, exp) {
+function Monster(name, inventory, hp, attack, money, exp, imageURL) {
   this.id = nextMonsterID
   nextMonsterID += 1
   monsters.push(this)
 
   this.name = name;
-  this.image = "https://s3.amazonaws.com/images.kingdomofloathing.com/adventureimages/dwarf_dopey.gif"
+  this.imageURL = imageURL
   this.inventory = inventory
   this.hp = hp
   this.attack = attack
@@ -63,7 +63,8 @@ function Monster(name, inventory, hp, attack, money, exp) {
 Monster.prototype.create = function () {
   return {"monster": this, "currentHP": this.hp}
 }
-new Monster("dopey 7-Foot Dwarf", [0, 1, 1, 1], 2, 1, 5, 5)
+new Monster("big creepy spider", [0, 0], 2, 1, 1, 1, "http://cdn.coldfront.net/thekolwiki/images/9/9a/Spider1.gif")
+new Monster("drunken half-orc hobo", [1], 3, 2, 2, 3, "http://cdn.coldfront.net/thekolwiki/images/d/d5/Hobo.gif")
 
 var user = new User('u9q5')
 var combatStatus = "new combat"
