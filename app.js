@@ -1,6 +1,7 @@
 const pug = require('pug')
 const compiledView_Inventory = pug.compileFile('templates/inventory.pug');
 const compiledView_Combat = pug.compileFile('templates/combat.pug');
+const compiledView_Map_Location = pug.compileFile('templates/map-location.pug');
 
 const express = require('express')
 const app = express()
@@ -31,6 +32,37 @@ User.prototype.gainExp = function (amt) {
   return 0
 }
 
+var nextLocationID = 0
+var locations = []
+function ImageLocation (imageURL) {
+  this.location = new Location(imageURL)
+  this.location.parent = this
+}
+function MapLocation (imageURL, map) {
+  this.map = map
+  this.location = new Location(imageURL)
+  this.location.parent = this
+}
+function AdventureLocation (imageURL, name, adventures) {
+  this.adventures = adventures
+  this.name = name
+  this.location = new Location(imageURL)
+  this.location.parent = this
+}
+function Location (imageURL) {
+  this.id = nextLocationID
+  nextLocationID += 1
+  locations.push(this)
+
+  this.imageURL = imageURL
+}
+new MapLocation("http://cdn.coldfront.net/thekolwiki/images/5/59/Rubble2.gif", [[1, 2], [3, 4]])
+new AdventureLocation("http://cdn.coldfront.net/thekolwiki/images/2/2e/Alley.gif", "The Sleazy Back Alley", [{"id":0, "odds":1}, {"id":1, "odds":1}]) //TODO: Odds not currently implemented.
+new ImageLocation("http://cdn.coldfront.net/thekolwiki/images/5/59/Rubble2.gif")
+new ImageLocation("http://cdn.coldfront.net/thekolwiki/images/5/59/Rubble2.gif")
+new ImageLocation("http://cdn.coldfront.net/thekolwiki/images/5/59/Rubble2.gif")
+
+
 var nextItemID = 0
 var items = []
 var itemsDict = {}
@@ -47,11 +79,10 @@ new Item("moxie weed")
 
 var nextMonsterID = 0
 var monsters = []
-function Monster(name, inventory, hp, attack, money, exp, imageURL) {
+function Monster (name, inventory, hp, attack, money, exp, imageURL) {
   this.id = nextMonsterID
   nextMonsterID += 1
   monsters.push(this)
-
   this.name = name;
   this.imageURL = imageURL
   this.inventory = inventory
@@ -90,8 +121,105 @@ app.get('/inventory', function (request, response) {
   response.send(compiledView_Inventory({user: user, itemStrings: compileInventoryStrings()}))
 })
 
-function generateMonsterForCombat () {
-  monsterIndex = Math.floor(Math.random() * monsters.length)
+app.get('/map', function (request, response) { // TODO: after battle, should be able to go back to parent location after combat.
+  if(request.query.locationID == undefined) {
+    request.query.locationID = 0
+  }
+  var location = locations[request.query.locationID];
+  if (location.parent instanceof MapLocation) {
+    var imageMap = []
+    for (var i = 0; i < location.parent.map.length; i++) {
+      imageMap.push([])
+
+      for (var j = 0; j < location.parent.map[i].length; j++) {
+        imageMap[i].push({id: location.parent.map[i][j], image: locations[location.parent.map[i][j]].imageURL})
+      }
+    }
+    response.send(compiledView_Map_Location({user: user, imageMap: imageMap}))
+  } else if (location.parent instanceof AdventureLocation) {
+    console.log("user enters combat, userHP - " + user.hp_current)
+    // No monster currently.
+    if (monster == null) {
+      monster = generateMonsterForCombat(location)
+      console.log("monster " + monster["monster"].name + " created, currentHP - " + monster['currentHP'])
+    }
+    monster['currentHP'] -= user.attackDamage()
+    console.log("monster damaged, currentHP - " + monster['currentHP'] + " damage - " + user.attackDamage())
+
+    // Monster died.
+    if (monster['currentHP'] <= 0) {
+      console.log("monster died")
+      var itemAcquiredStrings = []
+      var drops = generateMonsterDrops(monster['monster'])
+      for (var i in drops) {
+        if (!(i in user.inventory)) {
+          user.inventory[i] = drops[i]
+        } else if (i in user.inventory) {
+          user.inventory[i] += drops[i]
+        }
+        for (var j = 0; j < drops[i]; j++) {
+            itemAcquiredStrings.push(items[i].name)
+        }
+        console.log("user acquires item: " + items[i].name)
+      }
+      user.money += monster['monster'].money
+      console.log("user gains " + monster['monster'].money + " gold, total - " + user.money)
+      user.gainExp(monster['monster'].exp)
+      response.send(compiledView_Combat(
+        {
+          user: user,
+          monster: monster['monster'],
+          userAttackText: user.attackMsg(user.attackDamage()),
+          battleConsequences: {
+            'items': itemAcquiredStrings,
+            'exp': monster['monster'].exp,
+            'money': monster['monster'].money
+          },
+          locationID: request.query.locationID
+        }
+      ))
+      monster = null
+      // TODO: user at 0 hp scenario
+    // Monster survived.
+    } else if (monster['currentHP'] > 0) {
+      console.log("monster survived")
+      var monsterAttackAmt = monster["monster"].attack
+      var monsterAttackStr = "The monster hit you for " + monsterAttackAmt + " damage."
+      user.hp_current -= monsterAttackAmt
+      console.log("user damaged, currentHP - " + user.hp_current + " damage - " + monsterAttackAmt)
+      if (user.hp_current > 0) {
+        console.log("user survived")
+        response.send(compiledView_Combat(
+          {
+            user: user,
+            monster: monster["monster"],
+            userAttackText: user.attackMsg(user.attackDamage()),
+            monsterAttackText: monsterAttackStr,
+            locationID: request.query.locationID
+          }
+        ))
+      } else if (user.hp_current <= 0) {
+        user.hp_current = 0
+        response.send(compiledView_Combat(
+          {
+            user: user,
+            monster: monster,
+            userAttackText: userAttackStr,
+            monsterAttackText: monsterAttackStr,
+            battleEndText: "You lost the fight!",
+            locationID: request.query.locationID
+          }
+        ))
+      }
+    }
+  }
+
+})
+
+function generateMonsterForCombat (location) {
+  console.log(location.parent.adventures)
+  console.log(monsters)
+  monsterIndex = location.parent.adventures[Math.floor(Math.random() * location.parent.adventures.length)]["id"]
   monster = monsters[monsterIndex].create()
   return monster
 }
@@ -115,78 +243,7 @@ function generateMonsterDrops (monster) {
 }
 
 app.get('/combat', function (request, response) {
-  console.log("user enters combat, userHP - " + user.hp_current)
-  // No monster currently.
-  if (monster == null) {
-    monster = generateMonsterForCombat()
-    console.log("monster " + monster["monster"].name + " created, currentHP - " + monster['currentHP'])
-  }
-  monster['currentHP'] -= user.attackDamage()
-  console.log("monster damaged, currentHP - " + monster['currentHP'] + " damage - " + user.attackDamage())
 
-  // Monster died.
-  if (monster['currentHP'] <= 0) {
-    console.log("monster died")
-    var itemAcquiredStrings = []
-    var drops = generateMonsterDrops(monster['monster'])
-    for (var i in drops) {
-      if (!(i in user.inventory)) {
-        user.inventory[i] = drops[i]
-      } else if (i in user.inventory) {
-        user.inventory[i] += drops[i]
-      }
-      for (var j = 0; j < drops[i]; j++) {
-          itemAcquiredStrings.push(items[i].name)
-      }
-      console.log("user acquires item: " + items[i].name)
-    }
-    user.money += monster['monster'].money
-    console.log("user gains " + monster['monster'].money + " gold, total - " + user.money)
-    user.gainExp(monster['monster'].exp)
-    response.send(compiledView_Combat(
-      {
-        user: user,
-        monster: monster['monster'],
-        userAttackText: user.attackMsg(user.attackDamage()),
-        battleConsequences: {
-          'items': itemAcquiredStrings,
-          'exp': monster['monster'].exp,
-          'money': monster['monster'].money
-        }
-      }
-    ))
-    monster = null
-
-  // Monster survived.
-  } else if (monster['currentHP'] > 0) {
-    console.log("monster survived")
-    var monsterAttackAmt = monster["monster"].attack
-    var monsterAttackStr = "The monster hit you for " + monsterAttackAmt + " damage."
-    user.hp_current -= monsterAttackAmt
-    console.log("user damaged, currentHP - " + user.hp_current + " damage - " + monsterAttackAmt)
-    if (user.hp_current > 0) {
-      console.log("user survived")
-      response.send(compiledView_Combat(
-        {
-          user: user,
-          monster: monster["monster"],
-          userAttackText: user.attackMsg(user.attackDamage()),
-          monsterAttackText: monsterAttackStr
-        }
-      ))
-    } else if (user.hp_current <= 0) {
-      user.hp_current = 0
-      response.send(compiledView_Combat(
-        {
-          user: user,
-          monster: monster,
-          userAttackText: userAttackStr,
-          monsterAttackText: monsterAttackStr,
-          battleEndText: "You lost the fight!"
-        }
-      ))
-    }
-  }
 
 })
 

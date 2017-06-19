@@ -1,0 +1,11 @@
+extends basic-template
+
+block content
+  div(class="center")
+    table(style="border-collapse:separate; border-spacing: 0px; ")
+      each row in imageMap
+        tr
+          each location in row
+            td(style="padding:0px")
+              a(href="")
+                img(src=location["image"])

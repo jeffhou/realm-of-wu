@@ -12,7 +12,7 @@ block content
       div #{monsterAttackText}
       br
       div
-        a(href="combat") Attack!
+        a(href="/map?locationID=" + locationID) Attack!
       br
       div
         a(href="run") Run!
@@ -28,4 +28,4 @@ block content
       div(class="combat-row-15") You gain #{battleConsequences['exp']} experience
       br
       div
-        a(href="/combat") Adventure Again
+        a(href="/map?locationID=" + locationID) Adventure Again
