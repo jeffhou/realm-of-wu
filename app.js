@@ -123,7 +123,7 @@ function compileInventoryStrings () {
 app.get('/inventory', function (request, response) {
   response.send(compiledView_Inventory({user: user, itemStrings: compileInventoryStrings()}))
 })
-app.get('/map', function (request, response) { // TODO: after battle, should be able to go back to parent location after combat.
+app.get('/map', function (request, response) { // TODO: after battle, should be able to go back to parent location after combat -> only possible if each location has a parent value
   if(request.query.locationID == undefined) {
     request.query.locationID = 0
   }
