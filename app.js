@@ -35,15 +35,18 @@ User.prototype.gainExp = function (amt) {
 var nextLocationID = 0
 var locations = []
 function ImageLocation (imageURL) {
+  this.type = "ImageLocation"
   this.location = new Location(imageURL)
   this.location.parent = this
 }
 function MapLocation (imageURL, map) {
+  this.type = "MapLocation"
   this.map = map
   this.location = new Location(imageURL)
   this.location.parent = this
 }
 function AdventureLocation (imageURL, name, adventures) {
+  this.type = "AdventureLocation"
   this.adventures = adventures
   this.name = name
   this.location = new Location(imageURL)
@@ -120,7 +123,6 @@ function compileInventoryStrings () {
 app.get('/inventory', function (request, response) {
   response.send(compiledView_Inventory({user: user, itemStrings: compileInventoryStrings()}))
 })
-
 app.get('/map', function (request, response) { // TODO: after battle, should be able to go back to parent location after combat.
   if(request.query.locationID == undefined) {
     request.query.locationID = 0
@@ -130,9 +132,9 @@ app.get('/map', function (request, response) { // TODO: after battle, should be 
     var imageMap = []
     for (var i = 0; i < location.parent.map.length; i++) {
       imageMap.push([])
-
       for (var j = 0; j < location.parent.map[i].length; j++) {
-        imageMap[i].push({id: location.parent.map[i][j], image: locations[location.parent.map[i][j]].imageURL})
+        var currentLocationID = location.parent.map[i][j]
+        imageMap[i].push({id: currentLocationID, image: locations[currentLocationID].imageURL, type: locations[currentLocationID].parent.type})
       }
     }
     response.send(compiledView_Map_Location({user: user, imageMap: imageMap}))
@@ -217,8 +219,6 @@ app.get('/map', function (request, response) { // TODO: after battle, should be 
 })
 
 function generateMonsterForCombat (location) {
-  console.log(location.parent.adventures)
-  console.log(monsters)
   monsterIndex = location.parent.adventures[Math.floor(Math.random() * location.parent.adventures.length)]["id"]
   monster = monsters[monsterIndex].create()
   return monster
