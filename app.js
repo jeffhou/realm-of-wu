@@ -242,10 +242,5 @@ function generateMonsterDrops (monster) {
   return drops
 }
 
-app.get('/combat', function (request, response) {
-
-
-})
-
 app.listen(3000, function () {
 })
